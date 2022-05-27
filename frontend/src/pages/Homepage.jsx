@@ -1,29 +1,53 @@
-import useFetch from "../hooks/useFetch";
+// import useFetch from "../hooks/useFetch";
 import { Link } from "react-router-dom";
+import { useQuery, gql } from "@apollo/client";
+
+const REVIEWS = gql`
+    query GetReviews {
+        reviews {
+            data {
+                attributes {
+                    title
+                    rating
+                    body
+                    categories {
+                        data {
+                          attributes {
+                            name
+                          }
+                          id
+                        }
+                    }
+                }
+                id
+            }
+        }
+    }
+`
 
 const Homepage = () => {
+    // const { loading, error, data } = useFetch('http://localhost:1337/api/reviews');
+    const { loading, error, data } = useQuery(REVIEWS);
 
-    const { loading, error, data } = useFetch('http://localhost:1337/api/reviews');
-
-    if(loading) {
+    if (loading) {
         return <p>Loading...</p>
     }
 
-    if(error) {
+    if (error) {
         return <p>Error :'(</p>
     }
-
-    data && console.log(data);
 
     return (
         <div>
             {
-                data && data.map(review => (
+                data && data.reviews.data.map(review => (
                     <div className="review-card" key={review.id}>
                         <div className="rating">{review.attributes.rating}</div>
                         <h2>{review.attributes.title}</h2>
 
-                        <small>console list</small>
+                        {review.attributes.categories.data.map(console => (
+                            <small key={console.id}>{console.attributes.name}</small>
+                        )) }
 
                         <p>{review.attributes.body.substring(0, 200)}...</p>
                         <Link to={`/details/${review.id}`}>Read more</Link>
